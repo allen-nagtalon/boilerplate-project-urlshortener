@@ -32,15 +32,22 @@ app.get('/api/hello', function(req, res) {
 
 app.post('/api/shorturl', (req, res) => {
   try {
-    const check = new URL(req.body.url)
-    const urlDoc = new Url({ url: req.body.url })
-    urlDoc.save()
-      .then((url) => {
-        res.json({
-          original_url: req.body.url,
-          short_url: url.id
-        })
-      })
+    const urlObj = new URL(req.body.url)
+
+    dns.lookup(urlObj.hostname, (err) => {
+      if (err) {
+        res.json({ error: 'invalid url' })
+      } else {
+        const urlDoc = new Url({ url: req.body.url })
+        urlDoc.save()
+          .then((url) => {
+            res.json({
+              original_url: req.body.url,
+              short_url: url.id
+            })
+          })
+      }
+    })
   } catch (err) {
     res.json({ error: 'invalid url' })
   }
